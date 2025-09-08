@@ -1,10 +1,11 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel
 from random import randint
-from time import sleep
+import copy
 
 WIDTH_SIZE = 30
 HEIGHT_SIZE = 30
+
 class Coor:
     def __init__(self, x, y):
         self.x = x
@@ -14,6 +15,8 @@ search_coors = []
 bf_search_paths = []
 af_search_paths = []
 search_success = False
+final_path = []
+
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -22,69 +25,71 @@ class MyApp(QWidget):
 
     def initUI(self):
         grid = QGridLayout()
-        grid.setSpacing(0)                  # 박스 간격 0
-        grid.setContentsMargins(0, 0, 0, 0) # 바깥 여백 0
+        grid.setSpacing(0)
+        grid.setContentsMargins(0, 0, 0, 0)
         self.setLayout(grid)
 
         for h in range(HEIGHT_SIZE):
             for w in range(WIDTH_SIZE):
                 label = QLabel(self)
-                label.setFixedSize(13, 13)    # 크기 고정
+                label.setFixedSize(13, 13)
                 label.setStyleSheet("background-color: #eeeeee;")
                 self.boxes[h][w] = label
                 grid.addWidget(label, h, w)
 
-        self.setWindowTitle('QGridLayout')
+        self.setWindowTitle('BFS Path Finding')
         self.show()
     
     def updateMap(self, map_array):
         for h in range(HEIGHT_SIZE):
             for w in range(WIDTH_SIZE):
-                if(map_array[h][w] == 1): #시작지점
+                if(map_array[h][w] == 1): # 시작
                     self.boxes[h][w].setStyleSheet("background-color: #d84141;")
-                elif(map_array[h][w] == 2): #도착지점
+                elif(map_array[h][w] == 2): # 도착
                     self.boxes[h][w].setStyleSheet("background-color: #4b41d8;")
-                elif(map_array[h][w] ==  3): #탐색중
+                elif(map_array[h][w] == 3): # 탐색중
                     self.boxes[h][w].setStyleSheet("background-color: #eeee00;")
-                elif(map_array[h][w] ==  4): #탐색완료
+                elif(map_array[h][w] == 4): # 탐색완료
                     self.boxes[h][w].setStyleSheet("background-color: #aaaaaa;")
-                elif(map_array[h][w] ==  9): #장애물
+                elif(map_array[h][w] == 5): # 최종 경로
+                    self.boxes[h][w].setStyleSheet("background-color: #00cc66;")
+                elif(map_array[h][w] == 9): # 장애물
                     self.boxes[h][w].setStyleSheet("background-color: #111111;")
 
-class Dot():
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
 def addPath(bc : Coor, nc : Coor):
+    global final_path
     for path in bf_search_paths:
-        if(path[len(path) - 1].x == bc.x and path[len(path) - 1].y == bc.y):
-            print("경로 추가")
-            path.append(nc)
-            af_search_paths.append(path)
+        if(path[-1].x == bc.x and path[-1].y == bc.y):
+            new_path = path[:]   # 경로 복사
+            new_path.append(nc)
+            af_search_paths.append(new_path)
+            # 도착했으면 최종 경로 저장
+            if map_array[nc.y][nc.x] == 2:
+                final_path = new_path
             return
 
 def searchPath(c : Coor, d : str):
-    x = c.x
-    y = c.y
-    if(d == "U"): y -= 1
-    if(d == "D"): y += 1
-    if(d == "L"): x -= 1
-    if(d == "R"): x += 1
-    
-    if(x == -1 or x == WIDTH_SIZE or y == -1 or y == HEIGHT_SIZE):
+    global search_success
+    x, y = c.x, c.y
+    if d == "U": y -= 1
+    if d == "D": y += 1
+    if d == "L": x -= 1
+    if d == "R": x += 1
+
+    if x < 0 or x >= WIDTH_SIZE or y < 0 or y >= HEIGHT_SIZE:
         return
     
-    if(map_array[y][x] == 0 or map_array[y][x] == 2):
+    if map_array[y][x] == 0:  # 빈칸
         next_coor = Coor(x, y)
         search_coors.append(next_coor)
         map_array[y][x] = 3
         addPath(c, next_coor)
-    
-    return
 
-def changeColor(color: str, qlabel: QLabel):
-    qlabel.setStyleSheet(f"background-color: {color};")
+    elif map_array[y][x] == 2:  # 도착
+        print("도착!")
+        next_coor = Coor(x, y)
+        addPath(c, next_coor)
+        search_success = True
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -92,11 +97,11 @@ if __name__ == '__main__':
 
     map_array = [[0 for _ in range(WIDTH_SIZE)] for _ in range(HEIGHT_SIZE)]
     
-    # 시작지점과 종료지점을 생성
+    # 시작지점과 종료지점
     map_array[0][0] = 1
     map_array[HEIGHT_SIZE-1][WIDTH_SIZE-1] = 2
     
-    # 장애물 랜덤으로 생성
+    # 장애물 랜덤 생성
     for i in range(20):
         obstacle_width = randint(2, 4)
         obstacle_height = randint(2, 4)
@@ -116,18 +121,14 @@ if __name__ == '__main__':
     search_coors.append(Coor(0, 0))
     af_search_paths.append([Coor(0, 0)])
 
-    while(True):
-        for paths in af_search_paths:
-            for p in paths:
-                print("(%d, %d) → " % (p.x, p.y), end='')
-            print()
-        search_finish = False
+    while True:
         tmp_search_coors = search_coors[:]
-        bf_search_paths = af_search_paths[:]
+        bf_search_paths = copy.deepcopy(af_search_paths)
         af_search_paths = []
         search_coors = []
+
         for coor in tmp_search_coors:
-            if(map_array[coor.y][coor.x] != 1):
+            if map_array[coor.y][coor.x] != 1:
                 map_array[coor.y][coor.x] = 4
             
             searchPath(coor, "R")
@@ -136,10 +137,20 @@ if __name__ == '__main__':
             searchPath(coor, "U")
 
         ex.updateMap(map_array)
-        QApplication.processEvents()   # UI 강제로 갱신
-        
-        if(len(search_coors) == 0):
-            print("탐색 종료")
+        QApplication.processEvents()
+
+        if search_success:
+            print("탐색 성공")
             break
+        if len(search_coors) == 0:
+            print("탐색 실패")
+            break
+
+    # 최종 경로 표시
+    if search_success: 
+        for c in final_path:
+            if map_array[c.y][c.x] not in (1, 2):
+                map_array[c.y][c.x] = 5
+    ex.updateMap(map_array)
 
     sys.exit(app.exec_())
