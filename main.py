@@ -33,7 +33,7 @@ class MyApp(QWidget):
             for w in range(WIDTH_SIZE):
                 label = QLabel(self)
                 label.setFixedSize(13, 13)
-                label.setStyleSheet("background-color: #eeeeee;")
+                label.setStyleSheet("background-color: #fafafa;")
                 self.boxes[h][w] = label
                 grid.addWidget(label, h, w)
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     map_array[HEIGHT_SIZE-1][WIDTH_SIZE-1] = 2
     
     # 장애물 랜덤 생성
-    for i in range(20):
+    for i in range(30):
         obstacle_width = randint(2, 4)
         obstacle_height = randint(2, 4)
         obstacle_x = randint(0, WIDTH_SIZE-1)
