@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel
 from random import randint
+from time import sleep
 
 WIDTH_SIZE = 30
 HEIGHT_SIZE = 30
@@ -10,6 +11,7 @@ class Coor:
         self.y = y
 
 search_coors = []
+search_paths = []
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -41,7 +43,7 @@ class MyApp(QWidget):
                 elif(map_array[h][w] == 2): #도착지점
                     self.boxes[h][w].setStyleSheet("background-color: #4b41d8;")
                 elif(map_array[h][w] ==  3): #탐색중
-                    self.boxes[h][w].setStyleSheet("background-color: #aaaaaa;")
+                    self.boxes[h][w].setStyleSheet("background-color: #eeee00;")
                 elif(map_array[h][w] ==  4): #탐색완료
                     self.boxes[h][w].setStyleSheet("background-color: #aaaaaa;")
                 elif(map_array[h][w] ==  9): #장애물
@@ -83,18 +85,40 @@ if __name__ == '__main__':
     ex.updateMap(map_array)
 
     search_coors.append(Coor(0, 0))
-    for coor in search_coors:
-        # 왼쪽 찾기
-        if(coor.x != 0 and map_array[coor.y][coor.x-1] == 0):
-            print("왼쪽 찾기 실행")
-        # 오른쪽 찾기
-        if(coor.x != WIDTH_SIZE-1 and map_array[coor.y][coor.x+1] == 0):
-            print("오른쪽 찾기 실행")
-        # 위쪽 찾기
-        if(coor.y != 0 and map_array[coor.y-1][coor.x] == 0):
-            print("위쪽 찾기 실행")
-        # 아래쪽 찾기
-        if(coor.y != HEIGHT_SIZE-1 and map_array[coor.y+1][coor.x] == 0):
-            print("아래쪽 찾기 실행")
+    search_paths.append([Coor(0, 0)])
+
+    for idx in range(WIDTH_SIZE * HEIGHT_SIZE):
+        tmp_search_coors = search_coors[:]
+        search_coors = []
+        for coor in tmp_search_coors:
+            if(map_array[coor.y][coor.x] != 1):
+                map_array[coor.y][coor.x] = 4
+            # 왼쪽 찾기
+            if(coor.x != 0 and map_array[coor.y][coor.x-1] == 0):
+                search_coors.append(Coor(coor.x-1, coor.y))
+                map_array[coor.y][coor.x-1] = 3
+                print("왼쪽 찾기 실행")
+            # 오른쪽 찾기
+            if(coor.x != WIDTH_SIZE-1 and map_array[coor.y][coor.x+1] == 0):
+                search_coors.append(Coor(coor.x+1, coor.y))
+                map_array[coor.y][coor.x+1] = 3
+                print("오른쪽 찾기 실행")
+            # 위쪽 찾기
+            if(coor.y != 0 and map_array[coor.y-1][coor.x] == 0):
+                search_coors.append(Coor(coor.x, coor.y-1))
+                map_array[coor.y-1][coor.x] = 3
+                print("위쪽 찾기 실행")
+            # 아래쪽 찾기
+            if(coor.y != HEIGHT_SIZE-1 and map_array[coor.y+1][coor.x] == 0):
+                search_coors.append(Coor(coor.x, coor.y+1))
+                map_array[coor.y+1][coor.x] = 3
+                print("아래쪽 찾기 실행")
+        ex.updateMap(map_array)
+        QApplication.processEvents()   # UI 강제로 갱신
+        sleep(1)
+        
+        if(len(search_coors) == 0):
+            print("탐색 종료")
+            break
 
     sys.exit(app.exec_())
