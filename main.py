@@ -4,6 +4,12 @@ from random import randint
 
 WIDTH_SIZE = 30
 HEIGHT_SIZE = 30
+class Coor:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+search_coors = []
 class MyApp(QWidget):
     def __init__(self):
         super().__init__()
@@ -55,7 +61,7 @@ if __name__ == '__main__':
 
     map_array = [[0 for _ in range(WIDTH_SIZE)] for _ in range(HEIGHT_SIZE)]
     
-    # 시작지점과 종료지점을 랜덤으로 생성
+    # 시작지점과 종료지점을 생성
     map_array[0][0] = 1
     map_array[HEIGHT_SIZE-1][WIDTH_SIZE-1] = 2
     
@@ -75,5 +81,20 @@ if __name__ == '__main__':
                 map_array[obstacle_y + j][obstacle_x + k] = 9
 
     ex.updateMap(map_array)
-    
+
+    search_coors.append(Coor(0, 0))
+    for coor in search_coors:
+        # 왼쪽 찾기
+        if(coor.x != 0 and map_array[coor.y][coor.x-1] == 0):
+            print("왼쪽 찾기 실행")
+        # 오른쪽 찾기
+        if(coor.x != WIDTH_SIZE-1 and map_array[coor.y][coor.x+1] == 0):
+            print("오른쪽 찾기 실행")
+        # 위쪽 찾기
+        if(coor.y != 0 and map_array[coor.y-1][coor.x] == 0):
+            print("위쪽 찾기 실행")
+        # 아래쪽 찾기
+        if(coor.y != HEIGHT_SIZE-1 and map_array[coor.y+1][coor.x] == 0):
+            print("아래쪽 찾기 실행")
+
     sys.exit(app.exec_())
