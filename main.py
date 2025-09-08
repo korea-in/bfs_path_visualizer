@@ -3,8 +3,11 @@ from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QLabel
 from random import randint
 import copy
 
-WIDTH_SIZE = 30
-HEIGHT_SIZE = 30
+WIDTH_SIZE = 40
+HEIGHT_SIZE = 60
+TILE_SIZE = 8
+WALL_COUNT = 50
+WALL_SIZE = 8
 
 class Coor:
     def __init__(self, x, y):
@@ -32,7 +35,7 @@ class MyApp(QWidget):
         for h in range(HEIGHT_SIZE):
             for w in range(WIDTH_SIZE):
                 label = QLabel(self)
-                label.setFixedSize(13, 13)
+                label.setFixedSize(TILE_SIZE, TILE_SIZE)
                 label.setStyleSheet("background-color: #fafafa;")
                 self.boxes[h][w] = label
                 grid.addWidget(label, h, w)
@@ -102,9 +105,9 @@ if __name__ == '__main__':
     map_array[HEIGHT_SIZE-1][WIDTH_SIZE-1] = 2
     
     # 장애물 랜덤 생성
-    for i in range(30):
-        obstacle_width = randint(2, 4)
-        obstacle_height = randint(2, 4)
+    for i in range(WALL_COUNT):
+        obstacle_width = randint(1, WALL_SIZE)
+        obstacle_height = randint(1, WALL_SIZE)
         obstacle_x = randint(0, WIDTH_SIZE-1)
         obstacle_y = randint(0, HEIGHT_SIZE-1)
         for j in range(obstacle_height):
