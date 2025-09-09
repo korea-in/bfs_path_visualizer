@@ -40,7 +40,7 @@ class MyApp(QWidget):
                 self.boxes[h][w] = label
                 grid.addWidget(label, h, w)
 
-        self.setWindowTitle('BFS Path Finding')
+        self.setWindowTitle('BFS Path Finding (8-direction)')
         self.show()
     
     def updateMap(self, map_array):
@@ -74,10 +74,16 @@ def addPath(bc : Coor, nc : Coor):
 def searchPath(c : Coor, d : str):
     global search_success
     x, y = c.x, c.y
-    if d == "U": y -= 1
-    if d == "D": y += 1
-    if d == "L": x -= 1
-    if d == "R": x += 1
+
+    # 8방향 처리 (거리 가중치 없음)
+    if d == "U":  y -= 1
+    if d == "D":  y += 1
+    if d == "L":  x -= 1
+    if d == "R":  x += 1
+    if d == "UL": x -= 1; y -= 1
+    if d == "UR": x += 1; y -= 1
+    if d == "DL": x -= 1; y += 1
+    if d == "DR": x += 1; y += 1
 
     if x < 0 or x >= WIDTH_SIZE or y < 0 or y >= HEIGHT_SIZE:
         return
@@ -134,10 +140,17 @@ if __name__ == '__main__':
             if map_array[coor.y][coor.x] != 1:
                 map_array[coor.y][coor.x] = 4
             
+            # 4방향
             searchPath(coor, "R")
             searchPath(coor, "L")
             searchPath(coor, "D")
             searchPath(coor, "U")
+
+            # 대각선 4방향 추가
+            searchPath(coor, "UR")
+            searchPath(coor, "UL")
+            searchPath(coor, "DR")
+            searchPath(coor, "DL")
 
         ex.updateMap(map_array)
         QApplication.processEvents()
